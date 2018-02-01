@@ -1,16 +1,7 @@
 from ftplib import FTP
 import ftplib
+import json
 # import re
-
-# All Connection Data should be pass protected eg.(AES)
-NeltonHostName = 'gsmdg.home.pl'
-NeltonUserName = 'gsmdg_ftp@gsmdg.com'
-NeltonPassword = 'V4.2.5_20'
-
-# To be changed
-MWCatiaHostName = 'gsmdg.home.pl'
-MWCatiaUserName = 'gsmdg_ftp@gsmdg.com'
-MWCatiaPassword = 'V4.2.5_20'
 
 
 class Connection:
@@ -64,14 +55,11 @@ class Connection:
             print('Error when sending {0}\n\t{1}'
                   .format(str(self.cmnd).upper(), e))
 
-
-    @staticmethod
     def list_files():
         files = ftp.nlst()
         return files
         # ftp.retrlines('LIST')
 
-    @staticmethod
     def change_att(filename, att='666'):
 
         try:
@@ -86,10 +74,24 @@ class Connection:
             print('Error: "{3}"\n\twhen changing {0} to {1}'
                   .format(str(att), str(filename, e)))
 
+# All Connection Data should be pass protected eg.(AES)
+
+
+with open('../Cred/NeltonFTP.json', 'r') as f:
+    data = json.load(f)
+
+NeltonHostName = data['NeltonHostName']
+NeltonUserName = data['NeltonUserName']
+NeltonPassword = data['NeltonPassword']
+
+# To be changed
+MWCatiaHostName = data['NeltonHostName']
+MWCatiaUserName = data['NeltonHostName']
+MWCatiaPassword = data['NeltonHostName']
 
 try:
     ConNelton = Connection(host=NeltonHostName,
-       user=NeltonUserName, password=NeltonPassword)
+                           user=NeltonUserName, password=NeltonPassword)
 
     ConNelton.connect_with_ftp()
 
