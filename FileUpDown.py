@@ -5,19 +5,12 @@ Cred = readcred.ReadCredentials()
 CredentialsDic = Cred.read_credencials()
 
 if Cred.FTP_CRED:
-    NeltonFTP = connection.Connection(CredentialsDic['NeltonHostName'],
-                                      CredentialsDic['NeltonUserName'],
-                                      CredentialsDic['NeltonPassword'])
-
-    NeltonFTP.disconnect_with_ftp()
+    NeltonFTP = connection.Connection(host=CredentialsDic['NeltonHostName'],
+                                      user=CredentialsDic['NeltonUserName'],
+                                      passwd=CredentialsDic['NeltonPassword'])
 
     NeltonFTP.connect_with_ftp()
-
-    # ls = []
-    # NeltonFTP.list_files(ls)
-    # print(ls)
-
-    print(NeltonFTP.send_command('HELP'))
-
-
+    print(NeltonFTP.list_files())
+    NeltonFTP.cwd('_Jan')
+    print(NeltonFTP.list_files())
     NeltonFTP.disconnect_with_ftp()

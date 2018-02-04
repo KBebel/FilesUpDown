@@ -1,41 +1,31 @@
-def Sentence(somelist):
-    string = ''
-    i = 0
-    for word in somelist:
-        string += str(word)
-        i += 1
-        if i < len(somelist) - 1:
-            string += ", "
-        elif i < len(somelist):
-            string += ' i '
-    return string
+class Vehicle:
 
+    def __init__(self, name, color):
+        self.__name = name      # __name is private to Vehicle class
+        self.__color = color
 
-def PicGrid(grid):
-    for x in grid:
-        for y in x:
-            print(y, end='')
-        print()
-    print()
+    def getColor(self):         # getColor() function is accessible to class Car
+        return self.__color
 
+    def setColor(self, color):  # setColor is accessible outside the class
+        self.__color = color
 
-grid = [['.', '.', '0', '0', '.', '0', '0', '.', '.'],
-        ['.', '0', '0', '0', '0', '0', '0', '0', '.'],
-        ['.', '0', '0', '0', '0', '0', '0', '0', '.'],
-        ['.', '.', '0', '0', '0', '0', '0', '.', '.'],
-        ['.', '.', '.', '0', '0', '0', '.', '.', '.'],
-        ['.', '.', '.', '.', '0', '.', '.', '.', '.']]
+    def getName(self):          # getName() is accessible outside the class
+        return self.__name
 
-PicGrid(grid)
+class Car(Vehicle):
 
-some_value = False
+    def __init__(self, nazwa, color, model):
+        # call parent constructor to set name and color
+        super().__init__(nazwa, color)
+        self.__model = model
 
+    def getDescription(self):
+        return self.getName() + self.__model + " in " + self.getColor() + " color"
 
-def change_some_value():
-    global some_value
-    some_value = True
+# in method getDescrition we are able to call getName(), getColor() because they are
+# accessible to child class through inheritance
 
-print(some_value)
-change_some_value()
-print(some_value)
-
+c = Car("Ford Mustang", "red", "GT350")
+print(c.getDescription())
+print(c.getName()) # car has no method getName() but it is accessible through class

@@ -21,7 +21,7 @@ class ConnectionTest(unittest.TestCase):
     original_stdout = sys.stdout
 
     def setUp(self):
-        self.ConNelton = Connection(host='host', user='user', password='p')
+        self.ConNelton = Connection(host='host', user='user', passwd='p')
         sys.stdout = NullDevice()  # redirect the real STDOUT
 
     def tearDown(self):
