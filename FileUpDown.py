@@ -26,14 +26,13 @@ if platform.node() == 'AntaresDesktop':
     folder_remote_upload_she = '/MWM_VPN/test/she/'
     folder_remote_upload_def = '/MWM_VPN/test/0000/def/'
 else:
-    print('dupa')
     folder_remote_download = '/Aktualizacje/'
     folder_local_temp = 'd:/DATATRANSFER/temp/'
     folder_thrash = 'd:/DATATRANSFER/$Bin/'
-    folder_remote_upload_mod = '/catia_daten/mw/mod/'
-    folder_remote_upload_ses = '/catia_daten/mw/ses/'
-    folder_remote_upload_she = '/catia_daten/mw/she/'
-    folder_remote_upload_def = '/catia_daten/mw/adm/0000/data/MWA/SHD/define/'
+    folder_remote_upload_mod = '/cdmw/mod/'
+    folder_remote_upload_ses = '/cdmw/ses/'
+    folder_remote_upload_she = '/cdmw/she/'
+    folder_remote_upload_def = '/cdmw/adm/0000/data/MWA/SHD/define/'
 
 
 print(sys.stdin.encoding)
@@ -79,7 +78,7 @@ if Cred.FTP_CRED:
                   .format(folder_remote_download, folder_local_temp))
             for rar in rarlist:
                 print('\n' + rar)
-                t = threading.Thread(target = NeltonFTP.get(rar, delete='no'))
+                t = threading.Thread(target = NeltonFTP.get(rar, delete='yes'))
                 t.start()
                 while t.is_alive():
                     t.join(60)
