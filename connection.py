@@ -28,12 +28,12 @@ class Connection(ftplib.FTP):
             try:
                 global EFTP
                 print('\nConnecting with {0} ..'.format(self.host), end='')
-                EFTP = ftplib.FTP_TLS(self.host, timeout=10)
+                EFTP = ftplib.FTP(self.host, timeout=10)
                 print('.Logging in..', end = '')
                 EFTP.login(self.user, self.passwd)
                 self.bool_connected_with_ftp = True
                 print('.Connected.')
-                EFTP.encoding = 'utf-8'
+                # EFTP.encoding = 'utf-8'
                 EFTP.sendcmd('OPTS UTF8 ON')
 
             except ftplib.all_errors as e:
@@ -123,7 +123,7 @@ class Connection(ftplib.FTP):
         # add if *? than def lst=EFTP.nlst(), change *=all, ?=single
                 filesize = self.size(filename)
                 progress = progressbar.AnimatedProgressBar(end=filesize,
-                                                           width=50)
+                                                           width=20)
                 with open(filename, 'wb') as f:
                     def handle(chunk):
                         f.write(chunk)
@@ -136,7 +136,7 @@ class Connection(ftplib.FTP):
     def put(self, filename, delete='no', att='', date=''):
         # add if *? than def lst=EFTP.nlst(), change *=all, ?=single
         filesize = int(os.path.getsize(filename))
-        progress = progressbar.AnimatedProgressBar(end=filesize, width=50)
+        progress = progressbar.AnimatedProgressBar(end=filesize, width=20)
         with open(filename, 'rb') as f:
             def handle(chunk):
                 progress + len(chunk)
