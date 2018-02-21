@@ -1,4 +1,11 @@
 import json
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
+prt = logging.StreamHandler(sys.stdout)
+prt.setLevel(logging.INFO)
+logger.addHandler(prt)
 
 
 class ReadCredentials:
@@ -11,11 +18,11 @@ class ReadCredentials:
             with open('Cred/NeltonFTP.json', 'r') as f:
                 try:
                     data = json.load(f)
-                    print("Rading Credentials")
+                    logger.info("Rading Credentials")
                     self.FTP_CRED = True
                     return(data)
                 except Exception as e:
-                    print("Error: {}".format(e))
+                    logger.error("Error: {}".format(e))
         except EnvironmentError as e:
-            print("Error: {}\n\tFile with Credentials not Found".format(e))
-
+            logger.error(
+                "Error: {}\n\tFile with Credentials not Found".format(e))

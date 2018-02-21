@@ -2,7 +2,13 @@ import ftplib
 import inspect
 import progressbar
 import os
-import threading
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
+prt = logging.StreamHandler(sys.stdout)
+prt.setLevel(logging.INFO)
+logger.addHandler(prt)
 
 
 class Connection(ftplib.FTP):
@@ -27,23 +33,24 @@ class Connection(ftplib.FTP):
         if not self.is_connected(echo='no'):
             try:
                 global EFTP
-                print('\nConnecting with {0} ..'.format(self.host), end='')
+                print('\nConnecting with {0}..'.format(self.host), end='')
+                logger.debug('Connecting {0}'.format(self.host))
                 EFTP = ftplib.FTP(self.host, timeout=10)
                 print('.Logging in..', end = '')
                 EFTP.login(self.user, self.passwd)
                 self.bool_connected_with_ftp = True
-                print('.Connected.')
-                # EFTP.encoding = 'utf-8'
-                EFTP.sendcmd('OPTS UTF8 ON')
+                logger.info('.Connected.')
+                EFTP.encoding = 'utf-8'
+                self.sendcmd('OPTS UTF8 ON')
 
             except ftplib.all_errors as e:
-                print(str(e))
+                logger.error(str(e))
 
     def disconnect_with_ftp(self):
         if self.is_connected(inspect.stack()[0][3]):
-            print('\nClosing connection with {0}'.format(self.host), end='')
+            print('\nClosing connection with {0}..'.format(self.host), end='')
             EFTP.close()
-            print('.Connection closed.\n')
+            logger.info('.Connection closed.\n')
             self.bool_connected_with_ftp = False
 
     def is_connected(self, name='', echo='yes'):
@@ -53,15 +60,17 @@ class Connection(ftplib.FTP):
                 return True
             except Exception as e:
                 if echo.lower() == 'yes':
-                    print("function: \"{0}\" can\'t run:\
+                    logger.info(
+                        "function: \"{0}\" can\'t run:\
                           \n\tnot connected with {1}"
                           .format(name, str(self.host)))
                 self.bool_connected_with_ftp = False
         else:
             if echo.lower() == 'yes':
-                    print("function: \"{0}\" can\'t run:\
-                          \n\tnot connected with {1}"
-                          .format(name, str(self.host)))
+                    logger.info(
+                        "function: \"{0}\" can\'t run:\
+                        \n\tnot connected with {1}"
+                        .format(name, str(self.host)))
 
     def list_files(self, withatt="withoutatt", callback='None'):
         if self.is_connected(inspect.stack()[0][3]):
@@ -71,10 +80,7 @@ class Connection(ftplib.FTP):
                 return EFTP.nlst()
 
     def allowed_commands():
-        # return tuple of allowed commands
-        pass
-
-    def sendcmd(self, cmd='NOOP', type='None'):
+        """ return tuple of allowed commands """
         # Commands Home.pl:
         # ABOR    ACCT*   ADAT*   ALLO    APPE    AUTH    CCC *   CDUP
         # CONF*   CWD     DELE    ENC *   EPRT    EPSV    FEAT    HELP
@@ -84,6 +90,9 @@ class Connection(ftplib.FTP):
         # RNTO    SITE    SIZE    SMNT*   STAT*   STOR    STOU*   STRU
         # SYST    TYPE    USER    XCUP    XCWD    XMKD    XPWD    XRMD
         # ftp.retrlines('LIST')!!!!
+        pass
+
+    def sendcmd(self, cmd='NOOP', type='None'):
         self.cmnd = cmd
         self.type = type
         if self.is_connected(inspect.stack()[0][3]):
@@ -94,20 +103,22 @@ class Connection(ftplib.FTP):
                 else:
                     return EFTP.sendcmd(self.cmnd)
             except Exception as e:
-                print('Error when sending {0}\n\t{1}'
-                      .format(str(self.cmnd).upper(), e))
+                print(
+                    'Error when sending {0}\n\t{1}'
+                    .format(str(self.cmnd).upper(), e))
 
     def change_att(self, filename, att='664'):
         if self.is_connected(inspect.stack()[0][3]):
             try:
-                # print('Changing {} to {}'.format(filename, att))
                 EFTP.voidcmd('SITE chmod {} {}'.format(att, filename))
             except ftplib.error_reply as e:
-                print('Error: "{3}"\n\twhen changing {0} to {1}'
-                      .format(str(att), str(filename, e)))
+                logger.error(
+                    'Error: "{3}"\n\twhen changing {0} to {1}'
+                    .format(str(att), str(filename, e)))
             except Exception as e:
-                print('Error: "{3}"\n\twhen changing {0} to {1}'
-                      .format(str(att), str(filename, e)))
+                logger.error(
+                    'Error: "{3}"\n\twhen changing {0} to {1}'
+                    .format(str(att), str(filename, e)))
 
     def cwd(self, directory):
         # EFTP.voidcmd('CWD ' + directory)

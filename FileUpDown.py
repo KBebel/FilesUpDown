@@ -9,15 +9,32 @@ import platform
 import shutil
 import threading
 import datetime
+import logging
 unrarpath = os.getcwd() + '\\unrar.exe'
 rarfile.UNRAR_TOOL = unrarpath
 
 start = datetime.datetime.now()
-print(start.strftime("%Y-%m-%d %H:%M:%S (KW%W)"))
 
-if platform.node() == 'AntaresDesktop':
-    print('\t\tTesting mode on {}. Dummy folders active'
-          .format(platform.node()))
+logger = logging.getLogger(__name__)
+prt = logging.StreamHandler(sys.stdout)
+prt.setLevel(logging.INFO)
+logger.addHandler(prt)
+
+if not os.path.isdir('Log'):
+    os.makedirs('Log')
+logfilename = 'Log/FileUpDown{}.log'.format(start.strftime("_KW%W"))
+logging.basicConfig(filename=logfilename, level=logging.DEBUG)
+
+start = datetime.datetime.now()
+starttime = start.strftime("%Y-%m-%d %H:%M:%S (KW%W)")
+logger.info(starttime)
+logger.debug(sys.stdin.encoding)
+
+testing_patform = 'AntaresDesktop'
+
+if platform.node() == testing_patform:
+    logger.info('\t\tTesting mode on {}. Dummy folders active'
+                .format(platform.node()))
     folder_remote_download = '/MWM_VPN/test/Aktualizacje/'
     folder_local_temp = 'c:/DATATRANSFER/temp/'
     folder_thrash = 'c:/DATATRANSFER/$Bin/'
@@ -34,27 +51,39 @@ else:
     folder_remote_upload_she = '/cdmw/she/'
     folder_remote_upload_def = '/cdmw/adm/0000/data/MWA/SHD/define/'
 
-
-print(sys.stdin.encoding)
-
 Cred = readcred.ReadCredentials()
 CredentialsDic = Cred.read_credencials()
+if not CredentialsDic:
+    logger.error('Application stopped')
+    end = datetime.datetime.now()
+    elapsed = end - start
+    endtime = end.strftime("%Y-%m-%d %H:%M:%S")
+    logger.info(endtime)
+    logger.info('Elapsed %s', elapsed)
+    logger.info('.' * 72 + '\n')
+    sys.exit()
 
-if not os.path.isdir(folder_local_temp):
-    os.makedirs(folder_local_temp)
-
-if not os.path.isdir(folder_thrash):
-    os.makedirs(folder_thrash)
+for path in folder_local_temp, folder_thrash:
+    if not os.path.isdir(path):
+        os.makedirs(path)
 
 os.chdir(folder_local_temp)
 
 if Cred.FTP_CRED:
-    NeltonFTP = connection.Connection(host=CredentialsDic['NeltonHostName'],
-                                      user=CredentialsDic['NeltonUserName'],
-                                      passwd=CredentialsDic['NeltonPassword'])
-    CatiaFTP = connection.Connection(host=CredentialsDic['CatiaHostName'],
-                                     user=CredentialsDic['CatiaUserName'],
-                                     passwd=CredentialsDic['CatiaPassword'])
+    NeltonFTP = connection.Connection(
+        host=CredentialsDic['NeltonHostName'],
+        user=CredentialsDic['NeltonUserName'],
+        passwd=CredentialsDic['NeltonPassword'])
+    if platform.node() == testing_patform:
+        CatiaFTP = connection.Connection(
+            host=CredentialsDic['NeltonHostName'],
+            user=CredentialsDic['NeltonUserName'],
+            passwd=CredentialsDic['NeltonPassword'])
+    else:
+        CatiaFTP = connection.Connection(
+            host=CredentialsDic['CatiaHostName'],
+            user=CredentialsDic['CatiaUserName'],
+            passwd=CredentialsDic['CatiaPassword'])
 
     NeltonFTP.connect_with_ftp()
 
@@ -73,12 +102,12 @@ if Cred.FTP_CRED:
             if re.search('\.rar', file):
                 rarlist.append(file)
 
-        if len(rarlist ) > 0:
-            print('\nDownloading from {0} to {1}:'
-                  .format(folder_remote_download, folder_local_temp))
+        if len(rarlist) > 0:
+            logger.info('\nDownloading from {0} to {1}:'
+                        .format(folder_remote_download, folder_local_temp))
             for rar in rarlist:
-                print('\n' + rar)
-                t = threading.Thread(target = NeltonFTP.get(rar, delete='yes'))
+                logger.info('\n' + rar)
+                t = threading.Thread(target=NeltonFTP.get(rar, delete='yes'))
                 t.start()
                 while t.is_alive():
                     t.join(60)
@@ -93,13 +122,13 @@ for file in templist:
 
 cwd = os.getcwd()
 if len(rarlist) > 0:
-    print('Extracting files:')
+    logger.info('Extracting files:')
     for rar in rarlist:
-        rar = cwd +  '\\' + rar
+        rar = cwd + '\\' + rar
         opened_rar = rarfile.RarFile(rar)
         for f in opened_rar.infolist():
             if f.file_size > 0:
-                print (f.filename, f.file_size)
+                logger.info(str(f.filename) + '\t' + str(f.file_size))
                 opened_rar.extract(f)
 
 for file in rarlist:
@@ -118,65 +147,65 @@ CatiaFTP.connect_with_ftp()
 def uploadfolder(ftp, localpath, remotepath, folder, endtype='\.model',
                  att='664'):
     os.chdir(localpath)
-    # print(folder)
+    logger.debug(folder)
     stdout_ = sys.stdout
     sys.stdout = stream = io.StringIO()
     ftp.cwd(remotepath)
     sys.stdout = stdout_
-    # print('\n{}'.format(stream.getvalue()), end='')
 
     if '550' not in stream.getvalue():
-        print('\n...Uploading files from {0} to {1}'.
-              format(os.getcwd(), remotepath))
+        logger.info(
+            '\n...Uploading files from {0} to {1}'.format(
+                os.getcwd(), remotepath))
+        remote_folder_dir = []
+        files_dict_att = {}
+        CatiaFTP.list_files('withatt', remote_folder_dir.append)
+        if len(remote_folder_dir) > 0:
+            del remote_folder_dir[0]
+            for line in remote_folder_dir:
+                temp = line.split()
+                if temp[1] == '1':
+                    files_dict_att[temp[8]] = {'Size': temp[4],
+                                               'Date': temp[5:8],
+                                               'Att': temp[0],
+                                               'Owner': temp[2],
+                                               'Group': temp[3]}
         for file in os.listdir():
-            remote_folder_dir = []
-            files_dict_att = {}
-            CatiaFTP.list_files('withatt', remote_folder_dir.append)
-
-            if len(remote_folder_dir) > 1:
-                del remote_folder_dir[0]
-                for line in remote_folder_dir:
-                    temp = line.split()
-                    if temp[1] == '1':
-                        files_dict_att[temp[8]] = {'Size': temp[4],
-                                                   'Date': temp[5:8],
-                                                   'Att': temp[0],
-                                                   'Owner': temp[2],
-                                                   'Group': temp[3]}
-
             if re.search(endtype, file):
                 if file in files_dict_att:
-                    print(file)
+                    logger.info(file)
                     try:
-                        t = threading.Thread(target = ftp.put(file))
+                        t = threading.Thread(target=ftp.put(file))
                         t.start()
                         while t.is_alive():
                             t.join(60)
                             ftp.voidcmd('NOOP')
-                        print('\tfile overwritten. Owner:{0}. Att:{1}'
-                              .format(files_dict_att[file]['Owner'],
-                                      files_dict_att[file]['Att'],))
+                        logger.info(
+                            '\tfile overwritten. Owner:{0}. Att:{1}'
+                            .format(files_dict_att[file]['Owner'],
+                                    files_dict_att[file]['Att'],))
                     except Exception as e:
-                        print('Error: ' + str(e) + '\n')
+                        logger.error('Error: ' + str(e) + '\n')
                 else:
-                    print(file)
+                    logger.info(file)
                     try:
-                        t = threading.Thread(target = ftp.put(file))
+                        t = threading.Thread(target=ftp.put(file))
                         t.start()
                         while t.is_alive():
                             t.join(60)
                             ftp.voidcmd('NOOP')
                         ftp.change_att(file, att)
-                        print('\tsaved as new. Owner:{0}. Att:{1}'
-                              .format(ftp.user, att))
+                        logger.info('\tsaved as new. Owner:{0}. Att:{1}'
+                                    .format(ftp.user, att))
                     except Exception as e:
-                        print('Error: ' + str(e) + '\n')
+                        logger.error('Error: ' + str(e) + '\n')
+
     elif '550' in stream.getvalue():
-        print('\n{}'.format(stream.getvalue()))
+        logger.error('\n{}'.format(stream.getvalue()))
 
 
 cwd = os.getcwd()
-print('Folders to be uploaded: \n{}'.format(dirlist))
+logger.info('Folders to be uploaded: \n{}'.format(dirlist))
 
 for folder in dirlist:
     if re.search('M$', folder):
@@ -205,7 +234,7 @@ for folder in dirlist:
             uploadfolder(CatiaFTP, localpath, remotepath, folder,
                          endtype='\.def', att='666')
         else:
-            print('Wrong def folder name:{}'.format(folder))
+            logger.info('Wrong def folder name:{}'.format(folder))
 
 CatiaFTP.disconnect_with_ftp()
 
@@ -214,9 +243,11 @@ for folder in dirlist:
     shutil.rmtree(folder)
 
 end = datetime.datetime.now()
-elapsed = end-start
-print(end.strftime("%Y-%m-%d %H:%M:%S (KW%W)"))
-print('\n{}'.format(elapsed))
+elapsed = end - start
+endtime = end.strftime("%Y-%m-%d %H:%M:%S")
+logger.info(endtime)
+logger.info('Elapsed %s', elapsed)
+logger.info('.' * 72 + '\n')
 
 input('press Any key...')
 
