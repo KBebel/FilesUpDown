@@ -6,6 +6,6 @@ FileUpDown.py - starts the app (Credentials loaded from Json outside this rep)
 progressbar.py - dowlnloaded from https://github.com/anler/progressbar Thanks :)
 
 to do:
-- add logging
+- add logging (done. make more advanced :) )
 - cover 100% with tests
 - refactor
