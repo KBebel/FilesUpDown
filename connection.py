@@ -22,11 +22,12 @@ class Connection(ftplib.FTP):
     bool_connected_with_ftp = False
     EFTP = None
 
-    def __init__(self, host='', user='', passwd='', acct=''):
+    def __init__(self, host='', user='', passwd='', acct='', encoding=''):
         self.ftp = ftplib.FTP(host='', user='', passwd='', acct='')
         self.host = host
         self.user = user
         self.passwd = passwd
+        self.encoding = encoding
         # super().__init__(host='', user='', passwd='', acct='')
 
     def connect_with_ftp(self):
@@ -40,8 +41,9 @@ class Connection(ftplib.FTP):
                 EFTP.login(self.user, self.passwd)
                 self.bool_connected_with_ftp = True
                 logger.info('.Connected.')
-                EFTP.encoding = 'utf-8'
-                self.sendcmd('OPTS UTF8 ON')
+                if self.encoding == 'utf-8':
+                    EFTP.encoding = 'utf-8'
+                    self.sendcmd('OPTS UTF8 ON')
 
             except ftplib.all_errors as e:
                 logger.error(str(e))
@@ -98,6 +100,7 @@ class Connection(ftplib.FTP):
         if self.is_connected(inspect.stack()[0][3]):
             try:
                 print('Sending {}'.format(self.cmnd))
+                logger.debug(self.cmnd)
                 if self.type.upper() == 'ASCI':
                     EFTP.retrlines(self.cmnd)
                 else:
