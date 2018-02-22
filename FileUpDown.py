@@ -10,6 +10,7 @@ import shutil
 import threading
 import datetime
 import logging
+import argparse
 unrarpath = os.getcwd() + '\\unrar.exe'
 rarfile.UNRAR_TOOL = unrarpath
 
@@ -25,7 +26,11 @@ if not os.path.isdir('Log'):
 logfilename = 'Log/FileUpDown{}.log'.format(start.strftime("_KW%W"))
 logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
-start = datetime.datetime.now()
+parser = argparse.ArgumentParser()
+parser.add_argument('-nowait', action='store_true',
+    help='program will NOT WAIT at the end until key is pressed')
+args = parser.parse_args()
+
 starttime = start.strftime("%Y-%m-%d %H:%M:%S (KW%W)")
 logger.info(starttime)
 logger.debug(sys.stdin.encoding)
@@ -73,12 +78,14 @@ if Cred.FTP_CRED:
     NeltonFTP = connection.Connection(
         host=CredentialsDic['NeltonHostName'],
         user=CredentialsDic['NeltonUserName'],
-        passwd=CredentialsDic['NeltonPassword'])
+        passwd=CredentialsDic['NeltonPassword'],
+        encoding='utf-8')
     if platform.node() == testing_patform:
         CatiaFTP = connection.Connection(
             host=CredentialsDic['NeltonHostName'],
             user=CredentialsDic['NeltonUserName'],
-            passwd=CredentialsDic['NeltonPassword'])
+            passwd=CredentialsDic['NeltonPassword'],
+            encoding='utf-8')
     else:
         CatiaFTP = connection.Connection(
             host=CredentialsDic['CatiaHostName'],
@@ -99,7 +106,7 @@ if Cred.FTP_CRED:
         rarlist = []
 
         for file in folder_dir:
-            if re.search('\.rar', file):
+            if re.search('\.rar|\.RAR', file):
                 rarlist.append(file)
 
         if len(rarlist) > 0:
@@ -117,7 +124,7 @@ if Cred.FTP_CRED:
 rarlist = []
 templist = os.listdir()
 for file in templist:
-    if re.search('\.rar', file):
+    if re.search('\.rar|\.RAR', file):
         rarlist.append(file)
 
 cwd = os.getcwd()
@@ -249,7 +256,8 @@ logger.info(endtime)
 logger.info('Elapsed %s', elapsed)
 logger.info('.' * 72 + '\n')
 
-input('press Any key...')
+if args.nowait == False:
+    input('press Any key...')
 
 
 # for name in files_dict_att.keys():
@@ -264,5 +272,3 @@ input('press Any key...')
 #     print('{0}\t{1}'.format(entry['Name'], entry['Att']))
 #     if entry['Att'] == '-rw-r-----':
 #         NeltonFTP.change_att(entry['Name'], '664')
-
-# input('press Any key...')
