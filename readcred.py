@@ -10,7 +10,8 @@ logger.addHandler(prt)
 
 class ReadCredentials:
 
-    FTP_CRED = False
+    def __init__(self):
+        self.FTP_CRED = False
 
     def read_credencials(self):
 

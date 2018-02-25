@@ -1,12 +1,13 @@
-import unittest
-from unittest.mock import patch, mock_open
-import sys
-from FilesUpDown.FileUpDown import Connection
-import FilesUpDown.FileUpDown as FileUpDown
-from FilesUpDown.FileUpDown import ReadCredentials
 import os
+import sys
+import unittest
+from unittest.mock import mock_open, patch
+
+from FilesUpDown import readcred
+from FilesUpDown import connection
 
 os.chdir('../')
+print(os.getcwd())
 
 
 class NullDevice():
@@ -18,49 +19,52 @@ class NullDevice():
 
 class CredentialsTest(unittest.TestCase):
 
-    global original_stdout
     original_stdout = sys.stdout
 
     def setUp(self):
-        self.ConNelton = Connection(host='host', user='user', password='p')
         sys.stdout = NullDevice()  # redirect the real STDOUT
+        print('dup')
+        self.ConNelton = connection.Connection(
+            host='host', user='user', passwd='p')
+        self.Cred = readcred.ReadCredentials()
 
     def tearDown(self):
-        sys.stdout = original_stdout
+        sys.stdout = self.original_stdout
 
 # here I've got problem with open file path.
 # I think, that mocking is bad idea
 
     @patch('builtins.open', new_callable=mock_open, read_data='1')
     def test_read_credencials_flag_if_file_exists(self, mock_open):
-        self.assertFalse(FileUpDown.FTP_CRED,
+
+        self.assertFalse(self.Cred.FTP_CRED,
                          'Flag of FTP_CRED should be false before reading')
-        ReadCredentials.read_credencials()
-        self.assertTrue(FileUpDown.FTP_CRED,
+
+        CredentialsDic = self.Cred.read_credencials()
+        self.assertTrue(self.Cred.FTP_CRED,
                         'Flag of FTP_CRED should be true after reading')
 
     def test_read_credencials_flag_and_exception_if_file_not_present(self):
-        self.assertFalse(FileUpDown.FTP_CRED,
+        self.assertFalse(self.Cred.FTP_CRED,
                          'Flag of FTP_CRED should be false before reading')
-        os.chdir('../')
-        ReadCredentials.read_credencials()
 
-        self.assertFalse(FileUpDown.FTP_CRED,
+        os.chdir('../')
+        CredentialsDic = self.Cred.read_credencials()
+        self.assertFalse(self.Cred.FTP_CRED,
                          'Flag of FTP_CRED should be false after reading')
-        os.chdir('./FilesUpDown')
 
 
 class ConnectionTest(unittest.TestCase):
 
-    global original_stdout
     original_stdout = sys.stdout
 
     def setUp(self):
-        self.ConNelton = Connection(host='host', user='user', password='p')
         sys.stdout = NullDevice()  # redirect the real STDOUT
+        self.ConNelton = connection.Connection(
+            host='host', user='user', passwd='p')
 
     def tearDown(self):
-        sys.stdout = original_stdout
+        sys.stdout = self.original_stdout
 
     @patch('ftplib.FTP', autospec=True)
     def test_connect_func(self, mock_ftp_constructor):

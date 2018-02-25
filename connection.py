@@ -1,9 +1,10 @@
 import ftplib
 import inspect
-import progressbar
-import os
 import logging
+import os
 import sys
+
+import FilesUpDown.progressbar as progressbar
 
 logger = logging.getLogger(__name__)
 prt = logging.StreamHandler(sys.stdout)
@@ -37,7 +38,7 @@ class Connection(ftplib.FTP):
                 print('\nConnecting with {0}..'.format(self.host), end='')
                 logger.debug('Connecting {0}'.format(self.host))
                 EFTP = ftplib.FTP(self.host, timeout=10)
-                print('.Logging in..', end = '')
+                print('.Logging in..', end='')
                 EFTP.login(self.user, self.passwd)
                 self.bool_connected_with_ftp = True
                 logger.info('.Connected.')
@@ -60,7 +61,7 @@ class Connection(ftplib.FTP):
             try:
                 EFTP.voidcmd('NOOP')
                 return True
-            except Exception as e:
+            except Exception:
                 if echo.lower() == 'yes':
                     logger.info(
                         "function: \"{0}\" can\'t run:\
@@ -81,7 +82,7 @@ class Connection(ftplib.FTP):
             else:
                 return EFTP.nlst()
 
-    def allowed_commands():
+    def allowed_commands(self):
         """ return tuple of allowed commands """
         # Commands Home.pl:
         # ABOR    ACCT*   ADAT*   ALLO    APPE    AUTH    CCC *   CDUP
@@ -115,13 +116,11 @@ class Connection(ftplib.FTP):
             try:
                 EFTP.voidcmd('SITE chmod {} {}'.format(att, filename))
             except ftplib.error_reply as e:
-                logger.error(
-                    'Error: "{3}"\n\twhen changing {0} to {1}'
-                    .format(str(att), str(filename, e)))
+                logger.error('Error: \"{2}\"\n\twhen changing {0} to {1}'
+                             .format(str(att), str(filename), e))
             except Exception as e:
-                logger.error(
-                    'Error: "{3}"\n\twhen changing {0} to {1}'
-                    .format(str(att), str(filename, e)))
+                logger.error('Error: \"{2}\"\n\twhen changing {0} to {1}'
+                             .format(str(att), str(filename), e))
 
     def cwd(self, directory):
         # EFTP.voidcmd('CWD ' + directory)
@@ -130,8 +129,8 @@ class Connection(ftplib.FTP):
     def mlsd(self, path="", facts=[]):
         EFTP.mlsd(path="", facts=[])
 
-    def retrlines(self, cmd, callback = None):
-        EFTP.retrlines(cmd, callback = None)
+    def retrlines(self, cmd, callback=None):
+        EFTP.retrlines(cmd, callback=None)
 
     def get(self, filename, delete='no'):
         # add if *? than def lst=EFTP.nlst(), change *=all, ?=single

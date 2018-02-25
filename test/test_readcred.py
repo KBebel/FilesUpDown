@@ -1,10 +1,9 @@
-import unittest
-from unittest.mock import patch, mock_open
-import sys
-from FilesUpDown.readcred import ReadCredentials
-import FilesUpDown.readcred as readcred
-
 import os
+import sys
+import unittest
+from unittest.mock import mock_open, patch
+
+from FilesUpDown.readcred import ReadCredentials
 
 os.chdir('../')
 
@@ -18,7 +17,6 @@ class NullDevice():
 
 class CredentialsTest(unittest.TestCase):
 
-    global original_stdout
     original_stdout = sys.stdout
 
     def setUp(self):
@@ -26,7 +24,7 @@ class CredentialsTest(unittest.TestCase):
         self.Cred = ReadCredentials()
 
     def tearDown(self):
-        sys.stdout = original_stdout
+        sys.stdout = self.original_stdout
 
 # here I've got problem with open file path.
 # I think, that mocking is bad idea
@@ -47,7 +45,6 @@ class CredentialsTest(unittest.TestCase):
 
         self.assertFalse(self.Cred.FTP_CRED,
                          'Flag of FTP_CRED should be false after reading')
-        os.chdir('./FilesUpDown')
 
 
 if __name__ == '__main__':

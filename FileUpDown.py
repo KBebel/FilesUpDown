@@ -1,6 +1,3 @@
-import connection
-import readcred
-import rarfile
 import os
 import sys
 import io
@@ -11,6 +8,10 @@ import threading
 import datetime
 import logging
 import argparse
+import readcred
+import rarfile
+import connection
+
 unrarpath = os.getcwd() + '\\unrar.exe'
 rarfile.UNRAR_TOOL = unrarpath
 
@@ -28,7 +29,8 @@ logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-nowait', action='store_true',
-    help='program will NOT WAIT at the end until key is pressed')
+                    help='program will NOT WAIT \
+                    at the end until key is pressed')
 args = parser.parse_args()
 
 starttime = start.strftime("%Y-%m-%d %H:%M:%S (KW%W)")
@@ -106,7 +108,7 @@ if Cred.FTP_CRED:
         rarlist = []
 
         for file in folder_dir:
-            if re.search('\.rar|\.RAR', file):
+            if re.search(r'\.rar|\.RAR', file):
                 rarlist.append(file)
 
         if len(rarlist) > 0:
@@ -124,7 +126,7 @@ if Cred.FTP_CRED:
 rarlist = []
 templist = os.listdir()
 for file in templist:
-    if re.search('\.rar|\.RAR', file):
+    if re.search(r'\.rar|\.RAR', file):
         rarlist.append(file)
 
 cwd = os.getcwd()
@@ -151,7 +153,7 @@ for file in templist:
 CatiaFTP.connect_with_ftp()
 
 
-def uploadfolder(ftp, localpath, remotepath, folder, endtype='\.model',
+def uploadfolder(ftp, localpath, remotepath, folder, endtype=r'\.model',
                  att='664'):
     os.chdir(localpath)
     logger.debug(folder)
@@ -224,13 +226,13 @@ for folder in dirlist:
         remotepath = folder_remote_upload_ses + folder
         localpath = os.path.join(cwd, folder)
         uploadfolder(CatiaFTP, localpath, remotepath, folder,
-                     endtype='\.session')
+                     endtype=r'\.session')
 
     if re.search('S$', folder):
         remotepath = folder_remote_upload_she + folder
         localpath = os.path.join(cwd, folder)
         uploadfolder(CatiaFTP, localpath, remotepath, folder,
-                     endtype='\.sheet')
+                     endtype=r'\.sheet')
 
     if re.search('_define$', folder):
         ship = re.search('^0...', folder)
@@ -239,7 +241,7 @@ for folder in dirlist:
                                                           ship.group(0))
             localpath = os.path.join(cwd, folder)
             uploadfolder(CatiaFTP, localpath, remotepath, folder,
-                         endtype='\.def', att='666')
+                         endtype=r'\.def', att='666')
         else:
             logger.info('Wrong def folder name:{}'.format(folder))
 
@@ -256,7 +258,7 @@ logger.info(endtime)
 logger.info('Elapsed %s', elapsed)
 logger.info('.' * 72 + '\n')
 
-if args.nowait == False:
+if args.nowait is False:
     input('press Any key...')
 
 

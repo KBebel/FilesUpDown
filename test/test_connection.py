@@ -1,9 +1,9 @@
+import os
+import sys
 import unittest
 from unittest.mock import patch
-import sys
-from FilesUpDown.connection import Connection
 
-import os
+from FilesUpDown.connection import Connection
 
 os.chdir('../')
 
@@ -17,7 +17,6 @@ class NullDevice():
 
 class ConnectionTest(unittest.TestCase):
 
-    global original_stdout
     original_stdout = sys.stdout
 
     def setUp(self):
@@ -25,7 +24,7 @@ class ConnectionTest(unittest.TestCase):
         sys.stdout = NullDevice()  # redirect the real STDOUT
 
     def tearDown(self):
-        sys.stdout = original_stdout
+        sys.stdout = self.original_stdout
 
     @patch('ftplib.FTP', autospec=True)
     def test_connect_func(self, mock_ftp_constructor):
