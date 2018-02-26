@@ -16,6 +16,7 @@ to do:
 - GUI + upload
 
 Log for User should consist of:
+- empty run should be mentioned only by "date - no files to import"
 - list of rarfiles
 - what was in rar files
 - new/overwritten files
