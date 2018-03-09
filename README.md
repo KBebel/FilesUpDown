@@ -7,6 +7,7 @@ progressbar.py - dowlnloaded from https://github.com/anler/progressbar Thanks :)
 
 to do:
 - add logging (done. make more advanced :) )
+- if file already exist in \Temp - delete. It means that something went wrong on previous download
 - Error: 553 The file access permissions do not allow the specified action.
 - cover 100% with tests
 - refactor
