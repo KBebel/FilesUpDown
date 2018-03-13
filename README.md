@@ -9,6 +9,7 @@ to do:
 - add logging (done. make more advanced :) )
 - if file already exist in \Temp - delete. It means that something went wrong on previous download
 - Error: 553 The file access permissions do not allow the specified action.
+- large file warning - night transfer can exceed 2h! postpone to day transfer.
 - cover 100% with tests
 - refactor
 - Syncing full tree
