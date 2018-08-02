@@ -212,44 +212,44 @@ def uploadfolder(ftp, localpath, remotepath, folder, endtype=r'\.model',
     elif '550' in stream.getvalue():
         logger.error('\n{}'.format(stream.getvalue()))
 
+if CatiaFTP.is_connected():
+    cwd = os.getcwd()
+    logger.info('Folders to be uploaded: \n{}'.format(dirlist))
 
-cwd = os.getcwd()
-logger.info('Folders to be uploaded: \n{}'.format(dirlist))
+    for folder in dirlist:
+        if re.search('M$', folder):
+            remotepath = folder_remote_upload_mod + folder
+            localpath = os.path.join(cwd, folder)
+            uploadfolder(CatiaFTP, localpath, remotepath, folder)
 
-for folder in dirlist:
-    if re.search('M$', folder):
-        remotepath = folder_remote_upload_mod + folder
-        localpath = os.path.join(cwd, folder)
-        uploadfolder(CatiaFTP, localpath, remotepath, folder)
-
-    if re.search('SE$', folder):
-        remotepath = folder_remote_upload_ses + folder
-        localpath = os.path.join(cwd, folder)
-        uploadfolder(CatiaFTP, localpath, remotepath, folder,
-                     endtype=r'\.session')
-
-    if re.search('S$', folder):
-        remotepath = folder_remote_upload_she + folder
-        localpath = os.path.join(cwd, folder)
-        uploadfolder(CatiaFTP, localpath, remotepath, folder,
-                     endtype=r'\.sheet')
-
-    if re.search('_define$', folder):
-        ship = re.search('^0...', folder)
-        if ship:
-            remotepath = folder_remote_upload_def.replace('0000',
-                                                          ship.group(0))
+        if re.search('SE$', folder):
+            remotepath = folder_remote_upload_ses + folder
             localpath = os.path.join(cwd, folder)
             uploadfolder(CatiaFTP, localpath, remotepath, folder,
-                         endtype=r'\.def', att='666')
-        else:
-            logger.info('Wrong def folder name:{}'.format(folder))
+                         endtype=r'\.session')
 
-CatiaFTP.disconnect_with_ftp()
+        if re.search('S$', folder):
+            remotepath = folder_remote_upload_she + folder
+            localpath = os.path.join(cwd, folder)
+            uploadfolder(CatiaFTP, localpath, remotepath, folder,
+                         endtype=r'\.sheet')
 
-os.chdir(cwd)
-for folder in dirlist:
-    shutil.rmtree(folder)
+        if re.search('_define$', folder):
+            ship = re.search('^0...', folder)
+            if ship:
+                remotepath = folder_remote_upload_def.replace('0000',
+                                                              ship.group(0))
+                localpath = os.path.join(cwd, folder)
+                uploadfolder(CatiaFTP, localpath, remotepath, folder,
+                             endtype=r'\.def', att='666')
+            else:
+                logger.info('Wrong def folder name:{}'.format(folder))
+
+    CatiaFTP.disconnect_with_ftp()
+
+    os.chdir(cwd)
+    for folder in dirlist:
+        shutil.rmtree(folder)
 
 end = datetime.datetime.now()
 elapsed = end - start
